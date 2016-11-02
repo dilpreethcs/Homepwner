@@ -12,26 +12,26 @@ class ItemsTableViewController: UITableViewController {
     
     var itemStore: ItemStore!
     
-    @IBAction func addNewItem(sender: AnyObject) {
+    @IBAction func addNewItem(_ sender: AnyObject) {
         let newItem = itemStore.createItem()
         
-        if let index = itemStore.allItems.indexOf(newItem) {
-            let indexPath = NSIndexPath(forRow: index, inSection: 0)
-            tableView.insertRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+        if let index = itemStore.allItems.index(of: newItem) {
+            let indexPath = IndexPath(row: index, section: 0)
+            tableView.insertRows(at: [indexPath], with: .automatic)
         }
     }
     
-    @IBAction func toggleEditingMode(sender: AnyObject) {
-        if editing {
-            sender.setTitle("Edit", forState: .Normal)
+    @IBAction func toggleEditingMode(_ sender: AnyObject) {
+        if isEditing {
+            sender.setTitle("Edit", for: UIControlState())
             setEditing(false, animated: true)
         } else {
-            sender.setTitle("Done", forState: .Normal)
+            sender.setTitle("Done", for: UIControlState())
             setEditing(true, animated: true)
         }
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
         tableView.reloadData()
@@ -40,7 +40,7 @@ class ItemsTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let statusBarHeight = UIApplication.sharedApplication().statusBarFrame.height
+        let statusBarHeight = UIApplication.shared.statusBarFrame.height
         
         let insets = UIEdgeInsets(top: statusBarHeight, left: 0, bottom: 0, right: 0)
         
@@ -54,113 +54,109 @@ class ItemsTableViewController: UITableViewController {
     
     // MARK: - Table view data source
     
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         // #warning Incomplete implementation, return the number of sections
         return 1
     }
     
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
         return (itemStore.allItems.count + 1)
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        if indexPath.row != itemStore.allItems.count {
-            let cell = tableView.dequeueReusableCellWithIdentifier("ItemCell", forIndexPath: indexPath) as! ItemCell
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        if (indexPath as NSIndexPath).row != itemStore.allItems.count {
+            let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as! ItemCell
             
-            let item = itemStore.allItems[indexPath.row]
+            let item = itemStore.allItems[(indexPath as NSIndexPath).row]
             
             cell.nameLabel.text = item.name
             cell.serialNumberLabel.text = item.serialNumber
             cell.valueLabel.text = "$\(item.valueInDollars)"
             
             if item.valueInDollars < 50 {
-                cell.valueLabel.textColor = UIColor.greenColor()
+                cell.valueLabel.textColor = UIColor.green
             } else {
-                cell.valueLabel.textColor = UIColor.redColor()
+                cell.valueLabel.textColor = UIColor.red
             }
             
             return cell
         } else {
-            let cell = tableView.dequeueReusableCellWithIdentifier("StaticCell", forIndexPath: indexPath)
+            let cell = tableView.dequeueReusableCell(withIdentifier: "StaticCell", for: indexPath)
             return cell
         }
     }
     
     // Override to support conditional editing of the table view.
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         // Return false if you do not want the specified item to be editable.
-        if indexPath.row == itemStore.allItems.count {
+        if (indexPath as NSIndexPath).row == itemStore.allItems.count {
             return false
         }
         return true
     }
     
     // Override to support editing the table view.
-    override func tableView(tableView: UITableView, commitEditingStyle editingStyle: UITableViewCellEditingStyle, forRowAtIndexPath indexPath: NSIndexPath) {
-        if editingStyle == .Delete {
+    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
+        if editingStyle == .delete {
             // Delete the row from the data source
-            let item = itemStore.allItems[indexPath.row]
+            let item = itemStore.allItems[(indexPath as NSIndexPath).row]
             
             let title = "Delete \(item.name)"
             let message = "Are you sure you want to delete this item??"
             
             let alertController = UIAlertController(title: title,
                                                     message: message,
-                                                    preferredStyle: .ActionSheet)
+                                                    preferredStyle: .actionSheet)
             
-            let cancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: nil)
+            let cancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
             alertController.addAction(cancelAction)
             
-            let deleteAction = UIAlertAction(title: "Remove", style: .Destructive, handler: { (action) in
+            let deleteAction = UIAlertAction(title: "Remove", style: .destructive, handler: { (action) in
                 self.itemStore.removeItem(item)
-                self.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Automatic)
+                self.tableView.deleteRows(at: [indexPath], with: .automatic)
             })
             alertController.addAction(deleteAction)
             
-            presentViewController(alertController, animated: true, completion: nil)
+            present(alertController, animated: true, completion: nil)
         }
     }
     
     // Override to support rearranging the table view.
-    override func tableView(tableView: UITableView, moveRowAtIndexPath fromIndexPath: NSIndexPath, toIndexPath: NSIndexPath) {
-        if toIndexPath.row != itemStore.allItems.count {
-            itemStore.movedItemAtIndex(fromIndexPath.row, toIndexPath: toIndexPath.row)
+    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to toIndexPath: IndexPath) {
+        if (toIndexPath as NSIndexPath).row != itemStore.allItems.count {
+            itemStore.movedItemAtIndex((fromIndexPath as NSIndexPath).row, toIndexPath: (toIndexPath as NSIndexPath).row)
         }
     }
     
     // Override to support conditional rearranging of the table view.
-    override func tableView(tableView: UITableView, canMoveRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
         // Return false if you do not want the item to be re-orderable.
-        if indexPath.row == itemStore.allItems.count {
+        if (indexPath as NSIndexPath).row == itemStore.allItems.count {
             return false
         }
-        
         return true
     }
     
-    override func tableView(tableView: UITableView, targetIndexPathForMoveFromRowAtIndexPath sourceIndexPath: NSIndexPath, toProposedIndexPath proposedDestinationIndexPath: NSIndexPath) -> NSIndexPath {
-        if proposedDestinationIndexPath.row == itemStore.allItems.count {
-            let indexPath = NSIndexPath(forRow: itemStore.allItems.count - 1, inSection: 0)
+    override func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
+        if (proposedDestinationIndexPath as NSIndexPath).row == itemStore.allItems.count {
+            let indexPath = IndexPath(row: itemStore.allItems.count - 1, section: 0)
             return indexPath
         }
         return proposedDestinationIndexPath
     }
     
-    override func tableView(tableView: UITableView, titleForDeleteConfirmationButtonForRowAtIndexPath indexPath: NSIndexPath) -> String? {
+    override func tableView(_ tableView: UITableView, titleForDeleteConfirmationButtonForRowAt indexPath: IndexPath) -> String? {
         return "Remove"
     }
     
     // MARK: - Navigation
     
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ShowItem" {
-            if let row = tableView.indexPathForSelectedRow?.row {
+            if let row = (tableView.indexPathForSelectedRow as NSIndexPath?)?.row {
                 let item = itemStore.allItems[row]
-                let detailVC = segue.destinationViewController as! DetailViewController
+                let detailVC = segue.destination as! DetailViewController
                 detailVC.item = item
             }
         }

@@ -15,12 +15,10 @@ class DatePickerViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        datePicker.date = item.dateCreated
-        // Do any additional setup after loading the view.
+        datePicker.date = item.dateCreated as Date
     }
 
-    override func viewWillDisappear(animated: Bool) {
+    override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
         item.dateCreated = datePicker.date
     }
