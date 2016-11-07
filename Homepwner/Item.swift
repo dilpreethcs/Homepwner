@@ -24,6 +24,14 @@ class Item: NSObject {
         super.init()
     }
     
+    init(name: String, valueInDollars: Int) {
+        self.name = name
+        self.valueInDollars = valueInDollars
+        self.dateCreated = Date()
+        
+        super.init()
+    }
+    
     convenience init(random: Bool = false) {
         if random {
             let adjectives = ["Fluffy", "Rusty", "Shiny"]
@@ -41,7 +49,7 @@ class Item: NSObject {
             
             self.init(name: randomName, valueInDollars: randomValueInDollars, serialNumber: randomSerialNumber)
         } else {
-            self.init(name: "", valueInDollars: 0, serialNumber: nil)
+            self.init(name: "", valueInDollars: 0)
         }
     }
     

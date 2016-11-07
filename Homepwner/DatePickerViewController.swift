@@ -18,8 +18,7 @@ class DatePickerViewController: UIViewController {
         datePicker.date = item.dateCreated as Date
     }
 
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
+    @IBAction func datePickerValueDidChange(_ sender: UIDatePicker) {
         item.dateCreated = datePicker.date
     }
 }

@@ -10,12 +10,15 @@ import UIKit
 
 class ItemsTableViewController: UITableViewController {
     
-    var itemStore: ItemStore!
+    lazy var itemStore: ItemStore = {
+        let store = ItemStore()
+        return store
+    }()
     
     @IBAction func addNewItem(_ sender: AnyObject) {
         let newItem = itemStore.createItem()
         
-        if let index = itemStore.allItems.index(of: newItem) {
+        if let index = itemStore.index(newItem) {
             let indexPath = IndexPath(row: index, section: 0)
             tableView.insertRows(at: [indexPath], with: .automatic)
         }
@@ -40,13 +43,6 @@ class ItemsTableViewController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        let statusBarHeight = UIApplication.shared.statusBarFrame.height
-        
-        let insets = UIEdgeInsets(top: statusBarHeight, left: 0, bottom: 0, right: 0)
-        
-        tableView.contentInset = insets
-        tableView.scrollIndicatorInsets = insets
-        
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 60
         tableView.tableFooterView = UIView()
@@ -61,18 +57,16 @@ class ItemsTableViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         // #warning Incomplete implementation, return the number of rows
-        return (itemStore.allItems.count + 1)
+        return (itemStore.allItemsCount() + 1)
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if (indexPath as NSIndexPath).row != itemStore.allItems.count {
+        if (indexPath as NSIndexPath).row != itemStore.allItemsCount() {
             let cell = tableView.dequeueReusableCell(withIdentifier: "ItemCell", for: indexPath) as! ItemCell
             
-            let item = itemStore.allItems[(indexPath as NSIndexPath).row]
+            let item = itemStore.item(atIndex: (indexPath as NSIndexPath).row)
             
-            cell.nameLabel.text = item.name
-            cell.serialNumberLabel.text = item.serialNumber
-            cell.valueLabel.text = "$\(item.valueInDollars)"
+            cell.configureCell(item, indexPath: indexPath)
             
             if item.valueInDollars < 50 {
                 cell.valueLabel.textColor = UIColor.green
@@ -90,7 +84,7 @@ class ItemsTableViewController: UITableViewController {
     // Override to support conditional editing of the table view.
     override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         // Return false if you do not want the specified item to be editable.
-        if (indexPath as NSIndexPath).row == itemStore.allItems.count {
+        if (indexPath as NSIndexPath).row == itemStore.allItemsCount() {
             return false
         }
         return true
@@ -100,7 +94,7 @@ class ItemsTableViewController: UITableViewController {
     override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
         if editingStyle == .delete {
             // Delete the row from the data source
-            let item = itemStore.allItems[(indexPath as NSIndexPath).row]
+            let item = itemStore.item(atIndex: (indexPath as NSIndexPath).row)
             
             let title = "Delete \(item.name)"
             let message = "Are you sure you want to delete this item??"
@@ -124,7 +118,7 @@ class ItemsTableViewController: UITableViewController {
     
     // Override to support rearranging the table view.
     override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to toIndexPath: IndexPath) {
-        if (toIndexPath as NSIndexPath).row != itemStore.allItems.count {
+        if (toIndexPath as NSIndexPath).row != itemStore.allItemsCount() {
             itemStore.movedItemAtIndex((fromIndexPath as NSIndexPath).row, toIndexPath: (toIndexPath as NSIndexPath).row)
         }
     }
@@ -132,15 +126,15 @@ class ItemsTableViewController: UITableViewController {
     // Override to support conditional rearranging of the table view.
     override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
         // Return false if you do not want the item to be re-orderable.
-        if (indexPath as NSIndexPath).row == itemStore.allItems.count {
+        if (indexPath as NSIndexPath).row == itemStore.allItemsCount() {
             return false
         }
         return true
     }
     
     override func tableView(_ tableView: UITableView, targetIndexPathForMoveFromRowAt sourceIndexPath: IndexPath, toProposedIndexPath proposedDestinationIndexPath: IndexPath) -> IndexPath {
-        if (proposedDestinationIndexPath as NSIndexPath).row == itemStore.allItems.count {
-            let indexPath = IndexPath(row: itemStore.allItems.count - 1, section: 0)
+        if (proposedDestinationIndexPath as NSIndexPath).row == itemStore.allItemsCount() {
+            let indexPath = IndexPath(row: itemStore.allItemsCount() - 1, section: 0)
             return indexPath
         }
         return proposedDestinationIndexPath
@@ -155,7 +149,7 @@ class ItemsTableViewController: UITableViewController {
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "ShowItem" {
             if let row = (tableView.indexPathForSelectedRow as NSIndexPath?)?.row {
-                let item = itemStore.allItems[row]
+                let item = itemStore.item(atIndex: row)
                 let detailVC = segue.destination as! DetailViewController
                 detailVC.item = item
             }

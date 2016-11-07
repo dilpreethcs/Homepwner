@@ -52,10 +52,15 @@ class DetailViewController: UIViewController, UITextFieldDelegate {
         item.name = nameTextField.text ?? ""
         item.serialNumber = serialNumberTextField.text
         
-        if let valueText = valueTextField.text, let value = numberFormatter.number(from: valueText) {
+        guard let valueText = valueTextField.text else { return }
+        
+        if let value = numberFormatter.number(from: valueText) {
             item.valueInDollars = value.intValue
         } else {
-            item.valueInDollars = 0
+            let plainValue = valueText.replacingOccurrences(of: ",", with: "")
+            if let value = numberFormatter.number(from: plainValue) {
+                item.valueInDollars = value.intValue
+            }
         }
     }
     

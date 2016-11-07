@@ -10,7 +10,9 @@ import UIKit
 
 class ItemStore {
     
-    var allItems = [Item]()
+    private lazy var allItems : [Item] = {
+        return [Item]()
+    }()
     
     func createItem() -> Item {
         let newItem = Item(random: true)
@@ -25,15 +27,25 @@ class ItemStore {
     }
     
     func movedItemAtIndex(_ fromIndexPath: Int, toIndexPath: Int) {
-        if fromIndexPath == toIndexPath {
+        if fromIndexPath == toIndexPath || toIndexPath != (allItems.count - 1) {
             return
         }
-
-        let movedItem = allItems[fromIndexPath]
         
-        if toIndexPath != (allItems.count - 1) {
-            allItems.remove(at: fromIndexPath)
-            allItems.insert(movedItem, at: toIndexPath)
-        }
+        let movedItem = allItems[fromIndexPath]
+        allItems.remove(at: fromIndexPath)
+        allItems.insert(movedItem, at: toIndexPath)
     }
+    
+    func index(_ item: Item) -> Int? {
+        return allItems.index(of: item) ?? nil
+    }
+    
+    func allItemsCount() -> Int {
+        return allItems.count
+    }
+    
+    func item(atIndex: Int) -> Item {
+        return allItems[atIndex] 
+    }
+    
 }
